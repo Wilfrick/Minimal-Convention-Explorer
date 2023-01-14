@@ -12,16 +12,20 @@ def run_trail_2(convention, number_of_players):
     while G.game_running():
         if not convention.make_move(G):
             print("couldn't find a move")
+
+        #G.display_all_flags()
         convention.update(G)
+        #G.display_all_flags()
         G.move_hands()
+        #print("")
     return G.get_score()
 
 if __name__ == "__main__":
-    from ucons import v1_0, do_something, clue_prev_player_final_card
+    from ucons import v1_1, v1_0, do_something, clue_prev_player_final_card
     import Stats
-    N = 1000
+    N = 10000
     score_bins = [0 for _ in range(26)]
-    conv = v1_0()
+    conv = v1_1()
     scores = [run_trail_2(conv, 3) for _ in range(N)]
     for score in scores:
         score_bins[score] += 1

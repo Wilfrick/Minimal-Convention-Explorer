@@ -119,6 +119,7 @@ class Stack:
 
 class Game:
     version = "No version given"
+    debug = False
     def __init__(self, number_of_players):
         from random import shuffle
         self.suits = ("R", "B", "Y", "G", "W")
@@ -152,7 +153,7 @@ class Game:
         self.card.cards = [[Card(self.deck.pop()) for _ in range(self.hand_size)] for _ in range(number_of_players)]
 
     def play_card(self, card_index):  # plays current player's ith card
-        #print(f"Playing {str(self.card[0][card_index])}.")
+        if Game.debug: print(f"Playing {str(self.card[0][card_index])}.")
         playable_card = self.card[0].pop(card_index)
         if len(self.deck):
             self.card[0].insert(0, Card(self.deck.pop()))
@@ -164,17 +165,17 @@ class Game:
                 card_fits = True
                 S.play()
         if card_fits:
-            #print("Yay, a card was played correctly.")
+            if Game.debug: print("Yay, a card was played correctly.")
             pass
         else:
-            #print("Oh dear, a card was played incorrectly and a life was lost.")
+            if Game.debug: print("Oh dear, a card was played incorrectly and a life was lost.")
             self.lives -= 1
 
 
     def discard(self, card_index):  # discards current player's ith card
         if self.clue_tokens == 8:
             return False
-        #print(f"Discarding {str(self.card[0][card_index])}.")
+        if Game.debug: print(f"Discarding {str(self.card[0][card_index])}.")
         self.discard_pile.append(self.card[0].pop(card_index))
         self.clue_tokens += 1
         if len(self.deck):
@@ -192,15 +193,15 @@ class Game:
                 could_give_clue = True
                 c += Touched(clue)
         if could_give_clue:
-            #print(f"Giving player {player_index + 1} a clue of {clue}.")
+            if Game.debug: print(f"Giving player {player_index + 1} a clue of {clue}.")
             self.clue_tokens -= 1
         return could_give_clue
 
     def display_hands(self):
-        print(str(G.card))
+        print(str(self.card))
 
     def display_all_flags(self):
-        print(repr(G.card))
+        print(repr(self.card))
 
     def game_running(self):
         if self.lives == 0:
