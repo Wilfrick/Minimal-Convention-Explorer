@@ -1,3 +1,6 @@
+from inspect import getsource
+from hashlib import sha256
+
 class Flag:
     def __init__(self, shorthand = " ", data = None):
         self.shorthand=shorthand
@@ -8,6 +11,9 @@ class Flag:
 
     __repr__ = __str__
 
+    @property
+    def uuid(self):
+        return sha256(getsource(self.__class__).encode()).hexdigest()
     def __eq__(self, other):  # should be overwritten for more interesting flags.
         if not isinstance(other, Flag):
             if isinstance(other, Card):
@@ -118,15 +124,23 @@ class Game:
         self.suits = ("R", "B", "Y", "G", "W")
         self.ranks = ("1", "1", "1", "2", "2", "3", "3", "4", "4", "5")
         self.deck = [Value(S+R) for S in self.suits for R in self.ranks]
+        # note how each card is represented by a single `Value` flag here, rather than by a Card object here
+        # Card objects hold potentially multiple flags, but these cards currently can't. In theory you could have a
+        # convention where you assign flags to cards in the draw pile, but given that you know very little about them
+        # it seems unecessary.
         shuffle(self.deck)
-        self.cards_left_in_deck = True
-        self.turns_remaining = number_of_players
-        self.discard_pile = []
+        self.cards_left_in_deck = True # only used at the end of the game
+        self.turns_remaining = number_of_players # only used at the end of the game, together with cards_left_in_deck
+        self.discard_pile = [] # pretty sure this will fill up with `Card()`s, rather than just `Value()` flags.
         self.stacks = [Stack(S) for S in self.suits]
         self.clue_tokens = 8
         self.lives = 3
         #print(self.deck)
-        self.current_player = 0
+        self.current_player = 0 # this is potentially confusing.
+        # As a convention writter you should always assume that you, the current player, is player 0
+        # The next player is player 1, and the player after that is player 2 and so on.
+        # This value is used by the game engine to keep track of which hands to show to the convention at any given time
+        # and should not be accessed directly.
         self.number_of_players = number_of_players
         if 1 <= number_of_players <= 3:
             self.hand_size = 5
