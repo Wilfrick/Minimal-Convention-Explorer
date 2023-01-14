@@ -25,24 +25,24 @@ For now I'll keep each ucon as a single class. In due course they might become i
 class <ucon name>:
     flags_accessed = [] # a list of uuids, which are sha256 hashes
     flags_modified = [] # a list of uuids, which are sha256 hashes
-    def make_move(self):
+    def make_move(self, game):
         return False # means no action taken
-        # could also call self.clue(<hand index>, <clue>),
-        # self.play_card(<card index>)
-        # or self.discard(<card index>)
+        # could also call game.clue(<hand index>, <clue>),
+        # game.play_card(<card index>)
+        # or game.discard(<card index>)
         # and each of these methods returns True on success and False on failure
 
-    def update(self):
-        pass # is allowed to modify flags using self.card[h][n] as discussed below.
+    def update(self, game):
+        pass # is allowed to modify flags using game.card[h][n] as discussed below.
 ```
-In order for `make_move` and `update` to be able to access the game state, the variable `self` has several attributes that store this data. Many of these are self explanitory and can be found in the `__init__` method of `Game` class in `GameLogic.py`, but some of the more complex structures are given more detail below:
-- `self.cards[<hand index>][<card index>]` returns an instance of `Card`, which has special behaviour with `==`, `+` and `-`. Please take head that `-` is especially weird, having different definitions depending on context.
-  - To explain, consider `c = self.cards[0][0]`. `c` is now the `Card` representing the current player's frontmost card.
+In order for `make_move` and `update` to be able to access the game state, the variable `game` has several attributes that store this data. Many of these are self explanitory and can be found in the `__init__` method of `Game` class in `GameLogic.py`, but some of the more complex structures are given more detail below:
+- `game.cards[<hand index>][<card index>]` returns an instance of `Card`, which has special behaviour with `==`, `+` and `-`. Please take head that `-` is especially weird, having different definitions depending on context.
+  - To explain, consider `c = game.cards[0][0]`. `c` is now the `Card` representing the current player's frontmost card.
   - `c + Flag("I'm playable")` adds the given flag to the card's internal list of flags, assuming there isn't already that flag present on this card (if there is then this action is ignored). (N.B. flag equality has also been overwritten, but by default two different instances of a given flag are considered equal unless they have explicitly both been given different data, in which case they are considered not equal)
   - `c - Flag("I'm playable")` removes the given flag from the card's internal list of flags, if the card currently contains a flag considered equal to this one. This can be useful to remove flags that you don't quite fully know. E.g. `c - Touched()` removes any `Touched(5)` flag from the card (as well as any other `Touched()` flag), because `Touched()` defines no explicit additonal data. If no such equal flag exists for this card then nothing happens.
   - `c == Flag("I'm playable")` returns `True` if the card's internal list of flags contains a flag considered equal to the given flag and `false` otherwise. This is intended to make code more readable.
   - `Flag("I'm playable") - c` returns the first flag (from the card's internal list of flags) that is considered equal to the given flag. This allows you to query the data in that flag and make decisions based on it. For example, `v = Value() - c` finds and stores the `Value()` flag for the given card, and then the data inside that flag can be accessed and used (e.g. with `suit, rank = v.data[0], v.data[1]`). In this particular case `c` is a card in our hand, so we would be accessing the value of a card in our hand, which should be avoided if you want to play the game fairly, but obviously `c` could be any card and this would still work.
-- `self.stacks` is a list of `Stack`s, each of which has a `fits` method. This method returns a boolean describing whether the given card would be the next card for that stack. As an example, a card `c` is playable right now iff `any(1 for S in self.stacks if S.fits(c)))` is true.
+- `game.stacks` is a list of `Stack`s, each of which has a `fits` method. This method returns a boolean describing whether the given card would be the next card for that stack. As an example, a card `c` is playable right now iff `any(1 for S in game.stacks if S.fits(c)))` is true.
 
 ## Next steps
 I think all that's left to do is to refactor one of the existing conventions (probably v1.0 because I know that that one works) and see if this system works. The goal is to make reusing small, independent chunks of convention possible, so let's see how well this does that.
