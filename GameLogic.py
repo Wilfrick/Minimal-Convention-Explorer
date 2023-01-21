@@ -176,12 +176,14 @@ class Game:
         if self.clue_tokens == 8:
             return False
         if Game.debug: print(f"Discarding {str(self.card[0][card_index])}.")
+        #print(list(self.card[0]))
         self.discard_pile.append(self.card[0].pop(card_index))
         self.clue_tokens += 1
         if len(self.deck):
             self.card[0].insert(0, Card(self.deck.pop()))
         elif self.cards_left_in_deck:
             self.cards_left_in_deck = False
+        #print(list(self.card[0]))
         return True
 
     def clue(self, player_index, clue):  # tries to give clue to given player. Returns True for success and False for failure

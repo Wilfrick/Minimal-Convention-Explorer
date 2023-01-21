@@ -111,3 +111,16 @@ I think it would be worth revisiting save clues to make them a bit smarter (e.g.
 ### Expectations
 Given how restricting the kinds of clues that could be given with save clues had a minimal effect on the average scores I am expecting that imposing the good touch principle should also have a minimal effect on scores. I think that without "fill in" moves the full potential of good touch will be wasted, but I'd still like to confirm this suspicion.
 I would hope that smarter save clues should be able to increase the average score, but maybe more efficiency is needed before any kind of save clues will matter.
+
+# A brief interlude
+While looking over the data collected over the past two iterations of this convention I realised that I was missing some important information: "how good is a good convention". I don't currently have a point of reference to compare against, so I'd like to fix that.
+I think I'll go about this in two ways:
+1. Collecting data from my own games. This will be incomplete and lacking in bredth, but will provide some insights
+2. Creating a cheating bot that can see its own cards and see what is possible then. This should also provide a good motivation for writing reuseable code for later conventions that will be smart enough to use lots of the available data.
+
+## Point 1
+From https://hanab.live/variant/0 I can see that about 20% of games end with a perfect score. At the moment the conventions listed here have played no perfect games at all, but at least this reinforces the idea that a perfect game should be achievable at least some of the time.
+It may also become apparent that maximising the number of perfect games and maximising the average score lead to slightly different conventions, but we'll cross that bridge when we come to it.
+
+## Point 2
+

@@ -21,11 +21,12 @@ def run_trail_2(convention, number_of_players):
     return G.get_score()
 
 if __name__ == "__main__":
-    from ucons import v1_1, v1_0, do_something, clue_prev_player_final_card
+    from ucons import cheat_ucon_v1, cheat_ucon_v2, cheat_ucon_v3
     import Stats
     N = 10000
+    cutoff = 17  # 17 is best for 3 player
     score_bins = [0 for _ in range(26)]
-    conv = v1_1()
+    conv = cheat_ucon_v3(cutoff)
     scores = [run_trail_2(conv, 3) for _ in range(N)]
     for score in scores:
         score_bins[score] += 1

@@ -16,3 +16,7 @@ class Chop(Flag):
 class Chop_Moved(Flag):
     def __init__(self, data = None):
         super().__init__("CM", data)
+
+class Useless(Flag):
+    def __init__(self, data = None):
+        super().__init__("UL", data)

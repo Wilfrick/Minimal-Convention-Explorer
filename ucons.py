@@ -324,6 +324,145 @@ class v1_1(ucon):
                                      do_something(),
                                      ])
 
+class cheat_ucon_v1(ucon): # I will allow this ucon (and child ucons) to access the values of their cards, just to see how good of a convention I can come up with
+    def __init__(self):
+        super().__init__(name = "cheat_ucon_v1",
+                         children=[
+                             cheat_identify_and_tag_useless_cards(),
+                             cheat_play_frontmost_playable(),
+                             clue_prev_player_final_card(),
+                             discard_frontmost_useless_card(),
+                             do_something(),
+                         ])
+
+class cheat_ucon_v2(ucon): # I will allow this ucon (and child ucons) to access the values of their cards, just to see how good of a convention I can come up with
+    def __init__(self):
+        super().__init__(name = "cheat_ucon_v2",
+                         children=[
+                             cheat_identify_and_tag_useless_cards(),
+                             cheat_play_lowest_rank_playable(),
+                             clue_prev_player_final_card(),
+                             discard_frontmost_useless_card(),
+                             do_something(),
+                         ])
+
+class cheat_play_frontmost_playable(ucon):
+    def __init__(self):
+        super().__init__(name = "cheat_play_frontmost_playable")
+
+    def make_move(self, game):
+        for card_index, c in enumerate(game.card[0]):
+            for s in game.stacks:
+                if s.fits(c): # not allowed for cards in your own hand
+                    return game.play_card(card_index)
+
+class cheat_play_lowest_rank_playable(ucon):
+    """Hopefully lower rank cards are better to play than higher rank cards as they
+    allow more future cards to be played"""
+    def __init__(self):
+        super().__init__(name = "cheat_play_lowest_rank_playable")
+
+    def make_move(self, game):
+        playable_cards_with_ranks = [] # contains tuples of (card_index, card_rank)
+        for card_index, c in enumerate(game.card[0]):
+            for s in game.stacks:
+                if s.fits(c): # not allowed for cards in your own hand
+                    playable_cards_with_ranks.append((card_index, int((GameLogic.Value() - c).data[1])))
+                    break
+        if len(playable_cards_with_ranks) == 0:
+            return False
+        lowest_rank_playable_card = min(playable_cards_with_ranks, key = lambda x: x[1])
+        return game.play_card(lowest_rank_playable_card[0])
+
+class identify_and_tag_useless_cards(ucon):
+    """Uses discard pile and stacks to identify cards that can never be played and tags them as Useless
+    A card not being identified as Useless does not necessarily imply that it will be useful, but rather that it could be useful"""
+    def __init__(self):
+        super().__init__(name = "identify_and_tag_useless_cards")
+
+    def make_move(self, game):
+        for h in range(1, game.number_of_players):
+            for c in game.card[h]:
+                if self.is_useless(game, c):
+                    c += CustomFlags.Useless()
+
+    def is_useless(self, game, card):
+        return not self.could_be_played(game, card)
+    def could_be_played(self, game, card):
+        v = GameLogic.Value() - card
+        for S in game.stacks:
+            if S.suit == v.data[0]:
+                if int(S.rank) < int(v.data[1]):
+                    return True
+                else:
+                    return False
+
+    def update(self, game):
+        self.clear_flag(CustomFlags.Useless())
+
+
+class cheat_identify_and_tag_useless_cards(ucon):
+    """Uses discard pile and stacks to identify cards that can never be played and tags them as Useless
+    A card not being identified as Useless does not necessarily imply that it will be useful, but rather that it could be useful"""
+
+    def __init__(self):
+        super().__init__(name="cheat_identify_and_tag_useless_cards")
+
+    def make_move(self, game):
+        for h in range(game.number_of_players): # looks at all cards
+            for c in game.card[h]:
+                if self.is_useless(game, c):
+                    c += CustomFlags.Useless()
+
+    def is_useless(self, game, card):
+        return not self.could_be_played(game, card)
+
+    def could_be_played(self, game, card):
+        v = GameLogic.Value() - card
+        for S in game.stacks:
+            if S.suit == v.data[0]:
+                if int(S.rank) < int(v.data[1]):
+                    return True
+                else:
+                    return False
+
+    def update(self, game):
+        self.clear_flag(game, CustomFlags.Useless())
+
+class discard_frontmost_useless_card(ucon):
+    def __init__(self):
+        super().__init__(name = "discard_frontmost_useless_card")
+
+    def make_move(self, game):
+        for card_index, c in enumerate(game.card[0]):
+            if c == CustomFlags.Useless():
+                return game.discard(card_index)
+
+class cheat_ucon_v3(ucon): # I will allow this ucon (and child ucons) to access the values of their cards, just to see how good of a convention I can come up with
+    def __init__(self, cutoff = 17):
+        super().__init__(name = "cheat_ucon_v3",
+                         children=[
+                             cheat_identify_and_tag_useless_cards(),
+                             cheat_play_frontmost_playable(),
+                             waste_time_between_clue_or_discard(cutoff),
+                             clue_prev_player_final_card(),
+                             discard_frontmost_useless_card(),
+                             do_something(),
+                         ])
+
+class waste_time_between_clue_or_discard(ucon):
+    def __init__(self, cutoff = 17): # cutoff = -1 means always clue, cutoff = 25 means always discard
+        super().__init__(name = "waste_time_between_clue_or_discard")
+        self.cutoff = cutoff
+        self.discard_action = discard_frontmost_useless_card().make_move
+        self.clue_action = clue_prev_player_final_card().make_move
+
+    def make_move(self, game):
+        if game.get_score() <= self.cutoff:
+            return self.discard_action(game)
+        else:
+            return self.clue_action(game)
+
 if __name__ == "__main__":
     u = ucon(name = "hi there")
     b = do_something()
